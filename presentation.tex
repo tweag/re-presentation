@@ -16,7 +16,7 @@
 
 \title{Multimodal MCMC with Replica Exchange and TensorFlow Probability}
 \date{Bayesian Mixer London, Nov 30, 2020}
-\author{Simeon Carstens, Tweag I/O}
+\author{Simeon Carstens}
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO}}}
 \renewcommand{\d}{\mathrm{d}}
 \newcommand{\btVFill}{\vskip0pt plus 1filll}
@@ -29,35 +29,17 @@
   \titlepage
 \end{frame}
 
-
-\begin{frame}
-  \frametitle{Your hosts}
-  \begin{tcolorbox}[title=Simeon (presentation)]
-    \begin{minipage}{0.3\textwidth}{
-        \includegraphics[width=0.15\paperwidth]{images/simeon}}
-    \end{minipage}
-    \begin{minipage}{0.6\textwidth}
-    \begin{itemize}
-    \item background in computational biology
-    \item Data Scientist at Tweag since 2019
-    \item lives in Paris
-    \end{itemize}
-    \end{minipage}
-  \end{tcolorbox}
-\end{frame}
-
-
 \begin{frame}
   \frametitle{Tweag I/O}
-  Software innovation lab and consultancy based in Paris with employees all around the world and a strong focus on open-source software.\\
+  Software engineering lab based in Paris with employees all around the world.\\
   \bigskip
   We specialize in
   \begin{itemize}
   \item software engineering, with a focus on functional programming
   \item DevOps, with a focus on reproducible software systems and builds
-  \item data science
+  \item data science -- from the first model to production deployment
   \end{itemize}
-  Key industries: finance, biotech, automotive\\
+  Industries: among others finance, biotech, automotive\\
   \bigskip
   Need help with your project? Want to work with us?\\
   \bigskip
@@ -65,11 +47,6 @@
   www.tweag.io\\
   \bigskip
   hello@tweag.io
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{What you're in for}
 \end{frame}
 
 \begin{frame}
@@ -245,14 +222,6 @@
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Replica Exchange: choosing swap partners}
-  Choose swap partners such that all replicas are connected, for example:
-  \begin{center}
-    \includegraphics[width=0.6\textwidth]{images/good_swap_strategy}
-  \end{center}
-\end{frame}
-
 \begin{frame}[fragile]
   \frametitle{Replica Exchange: acceptance criterion (informal motivation)}
   Plain exchanges disturb equilibrium distributions\\
@@ -308,116 +277,120 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Replica Exchange: life of a state}
-  Single states perform a random walk on a temperature ladder:
+  \frametitle{Replica Exchange: choosing swap partners}
+  Choose swap partners such that all replicas are connected, for example:
   \begin{center}
-    \includegraphics[width=0.5\textwidth]{images/state_trajectories}
+    \includegraphics[width=0.6\textwidth]{images/good_swap_strategy}
   \end{center}
-  Diffusion process: time to traverse ladder scales with $\sqrt{\#\mathrm{\ replicas}}$
-\end{frame}
-
-\begin{frame}
-  \frametitle{Replica Exchange: TF Probability implementation}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Application: Bayesian determination of chromatin structures}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Application: Bayesian determination of chromatin structures}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Waste recycling: multiple histogram reweighting}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Model comparison}
-\end{frame}
-
-
-\begin{frame}[label=evidence_frame]
-  \frametitle{Evidence}
-  \onslide<1->
   \begin{description}
-  \item[$p(D) = \int \d x\ p(D|x)p(x)$:]\hfill \\
-    normalization constant (long story...)
+  \item[Deterministic even-odd swapping:] try to swap $(\mathbf 0, 1), (\mathbf 2, 3), \ldots$ (even), then $(\mathbf 1,2), (\mathbf 3,4), \ldots$ (odd)
+  \item[Stochastic even-odd swapping:] decide randomly whether to swap even or odd
   \end{description}
-  In our case:
-   \begin{tikzpicture}
-     \node (content2) at (0,0) {\begin{minipage}{\paperwidth}
-  \begin{align*}
-    p(k=1) &= \int_0^1 \d b\ L(k=1|b) p(b) \\
-           &= \int_0^1 \d b\ \left.\mathrm{Bernoulli}(k; b) \times \mathrm{Beta}(k;\alpha=2, \beta=2)\right\vert_{k=1} \\
-           &= \int_0^1 \d b\ \left.b^{k}(1-b)^{k-1} \frac{b (1-b)}{\frac{\Gamma(2)\Gamma(2)}{\Gamma(4)}}\right\rvert_{k=1} \\
-           &\;\;\vdots \\
-           &=\frac{1}{2}
-  \end{align*}\end{minipage}};
-     \onslide<2->\node[align=center,red,font={\fontsize{50}{50}\bfseries}, rotate=45] at (content2.center) {YIKES};
-   \end{tikzpicture}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Real-world Bayesian data analysis}
+  \frametitle{Replica Exchange: life of a state}
+  States have to traverse the ``temperature ladder'' to be useful:
+  \begin{center}
+    \includegraphics[width=0.4\textwidth]{images/state_trajectories}
+  \end{center}
+  Stochastic swap scheme: traversal time $\propto (\#\mathrm{\ replicas})^2$ (diffusive)\\
+  Deterministic swap scheme: better scaling (non-diffusive)\\
+  \bigskip
+  In general: \textcolor{red}{more replicas $\nRightarrow$ better sampling}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Replica Exchange in TensorFlow Probability}
+  \centering
+  \vfill
+  \Huge -- demo time --
+  \vfill
+\end{frame}
+
+\begin{frame}
+  \frametitle{Knobs to tune}
+  \begin{itemize}
+  \item choice of distribution family $p_i(x)$:
+    \begin{itemize}
+    \item[--] informed by structure of the sampling problem
+    \item[--] in Bayesian inference often morphes posterior into prior 
+    \end{itemize}
+  \item number of interpolating distributions:\\
+    \begin{itemize}
+    \item[--] set target acceptance rate ($\approx 23\%$)
+    \item[--] heuristics (e.g., constant KL divergence between neighbors)
+    \item[--] hardware constraints
+    \end{itemize}
+  \item frequency of swap attempts:\\
+    ``often''
+  \item choice of swap partners
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Application: Bayesian determination of chromosome structures}
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{images/genome_organization}
+  \end{center}
+  Structure in ``?'' regime:
+  \begin{itemize}
+  \item active / passive chromatin compartments
+  \item globular domains of several $\approx 100$ nanometers in size
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Bayesian chromosome structure determination}
   \begin{columns}
-    \begin{column}[T]{0.48\textwidth}
-      In real problems: non-standard, difficult posterior distributions\\
+    \begin{column}[T]{0.28\textwidth}
+      \includegraphics[width=\textwidth]{images/schic_matrix}
     \end{column}
-    \begin{column}[T]{0.48\textwidth}
-      \includegraphics[width=0.5\textwidth]{images/2d_multimodal}
+    \begin{column}[T]{0.7\textwidth}
+      \textbf{Data:}\\
+      Binary contacts between loci; model with ``logistic regression'':
+      \begin{equation*}
+        p(\mathrm{contact\ } i \leftrightarrow j|\vec x_i, \vec x_j) = \frac{1}{1+\mathrm e^{-\alpha (d_{\mathrm{c}} - |\vec x_i - \vec x_j|)}}
+      \end{equation*}
     \end{column}
   \end{columns}
+  \vfill
   \begin{columns}
-    \begin{column}{0.6\textwidth}
-      \begin{tcolorbox}[title=Probabilistic programming libraries]
-        Allow to
-        \begin{itemize}
-        \item programmatically define a statistical model
-        \item sample from arbitrary posterior distributions
-        \item run quality checks
-        \end{itemize}
-      \end{tcolorbox}
+    \begin{column}[T]{0.28\textwidth}
+      \includegraphics[width=\textwidth]{images/bead_model_schic}
     \end{column}
-    \begin{column}{0.38\textwidth}
-      \vfill
-      Examples:
-      \begin{itemize}
-      \item PyMC3
-      \item Stan
-      \item TensorFlow Probability
-      \item ...
-      \end{itemize}
-      \vfill
+    \begin{column}[T]{0.7\textwidth}
+      \textbf{Prior:}\\
+      beads-on-a-chain with volume exclusion $E_\mathrm{ve}(\vec X)$ and chain connectivity $E_\mathrm{nb}(\vec X)$\\
+      \bigskip
+      Tempered family of posteriors:\\
+      \begin{equation*}
+        p_i(\vec X|D) \propto [p(D|\vec X)]^{\beta_i} \times \mathrm e^{-E_\mathrm{ve}(\vec X)} \times e^{-E_\mathrm{nb}(\vec X)}
+      \end{equation*}
     \end{column}
   \end{columns}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Interlude: real-world issues}
-  In reality, probability distributions often
-  \begin{itemize}
-  \item of non-standard form
-  \item are multidimensional
-  \item have highly correlated random variables
-  \item are known only up to a normalization constant
-  \end{itemize}
-  Consequences:
-  \begin{itemize}
-  \item analytical evaluation of expectation values is impossible
-  \item naïve sampling approaches are inefficient (curse of dimensionality)
-  \end{itemize}
-  \begin{columns}
-    \begin{column}[T]{0.33\textwidth}
-      \adjustbox{width=.9\textwidth}{
-        \includegraphics{images/normalized_unnormalized_normal}
-      }
-    \end{column}
-    \begin{column}[T]{0.63\textwidth}
-      \includegraphics[width=0.35\textwidth]{images/dists_multi_grid}
-      \includegraphics[width=0.35\textwidth]{images/dists_2d}
-    \end{column}
-  \end{columns}
+  \frametitle{Application: Bayesian determination of chromatin structures}
+  Structures obtained from posterior sampling show several clusters:
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{images/schic_structures}
+  \end{center}
+   Largest clusters: $\approx$ partial mirror images of each other
 \end{frame}
+
+\begin{frame}
+  \frametitle{Keywords for further reading}
+  \begin{description}
+  \item[Replica Exchange with Non-equilibrium Switches (RENS):] \hfill \\
+    use non-equilibrium switching trajectories to increase acceptance rates
+  \item[Recycle RE samples:] \hfill \\
+    use histogram reweighting to calculate evidences and automatically tune interpolating distributions
+  \item[Multidimensional Replica Exchange:] \hfill \\
+    vary not one, but several ``temperatures''
+  \end{description}
+\end{frame}
+
 
 \end{document}
