@@ -1,0 +1,41 @@
+\mode<presentation>
+
+\setbeamertemplate{background}{
+  \begin{tikzpicture}
+  \fill[oxfordblue,opacity=1] (0,0) rectangle(\the\paperwidth,\the\paperheight);
+  \ifnum\thepage>1\relax%
+   \fill[white,opacity=1] (0,0) rectangle(\the\paperwidth,\the\paperheight);
+   \fi
+  \end{tikzpicture}
+}
+
+% Title page
+\defbeamertemplate*{title page}{texsx}[1][]
+{
+  \vskip40pt
+  \begin{picture}(50,50)
+  \put(0,-110){%
+  \includegraphics[width=0.4\textwidth]{title.pdf}
+  }
+  \end{picture}
+  \begin{picture}(0,0)
+  \put(125,6){%
+  \includegraphics[width=0.57\textwidth]{logo_tweag_white_padded.pdf}
+  }
+  \end{picture}
+  \begin{beamercolorbox}[wd=15cm,leftskip=7cm,sep=8pt,#1]{}
+      \small
+      \usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par%
+    \end{beamercolorbox}%
+  \vskip10pt  
+  \begin{beamercolorbox}[wd=15cm,leftskip=7cm,sep=8pt,#1]{}
+      \small
+      \usebeamerfont{title}\usebeamercolor[fg]{author}\insertauthor\par%
+    \end{beamercolorbox}%
+    \vskip10pt
+  \begin{beamercolorbox}[wd=15cm,leftskip=7cm,sep=8pt,#1]{}
+     \usebeamerfont{date}\usebeamercolor[fg]{date}{www.tweag.io}%
+  \end{beamercolorbox}%
+}
+\mode
+<all>
